@@ -38,18 +38,21 @@ router.get('/users', (req, res) => {
 })
 
 router.post('/users', (req, res) => {
-    const query = "INSERT INTO entries (guestName, content) VALUES (?, ?)"
-    pool.query(query, [req.body.guestName, req.body.content], (err, rows, fields) => {
-        if (err) {
-            console.error('error connecting: ' + err.stack);
-            res.sendStatus(500)
-            return;
-        }
+    // const query = "INSERT INTO entries (guestName, content) VALUES (?, ?)"
+    // pool.query(query, [req.body.guestName, req.body.content], (err, rows, fields) => {
+    //     if (err) {
+    //         console.error('error connecting: ' + err.stack);
+    //         res.sendStatus(500)
+    //         return;
+    //     }
        
-        console.log('Inserted a new user with id: ', rows.insertId)
-    })
+    //     console.log('Inserted a new user with id: ', rows.insertId)
+    // })
+    
+    console.log(req.body);
+    res.sendStatus(200)
 
-    res.send(req.body)
+    // res.send(req.body)
 })
 
 module.exports = router
