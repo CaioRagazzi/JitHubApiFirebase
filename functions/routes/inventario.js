@@ -1,6 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const mysql = require('mysql')
+const cors = require('cors')
+
+router.all('*', cors())
 
 const pool = mysql.createPool({
     connectionLimit: 400,
@@ -44,6 +47,19 @@ router.post('/inventario', (req, res) => {
 router.get('/inventario', (req, res) => {
 
     pool.query('SELECT * FROM tbInventario', (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
+router.post('/relatorio', (req, res) => {
+   
+    const query = 'SELECT * FROM tbInventario WHERE dsEstrutura in (?)'
+    pool.query(query, [req.body.strings], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)

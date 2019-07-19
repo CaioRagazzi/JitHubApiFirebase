@@ -6,6 +6,6 @@ const router = require('./routes/inventario.js')
 const app = express()
 
 app.use(router)
-app.use(cors({ origin: true }));
+app.use(cors());
 
 exports.app = functions.https.onRequest(app);
