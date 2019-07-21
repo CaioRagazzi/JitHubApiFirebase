@@ -58,8 +58,21 @@ router.get('/inventario', (req, res) => {
 
 router.post('/relatorio', (req, res) => {
    
-    const query = 'SELECT * FROM tbInventario WHERE dsEstrutura in (?)'
+    const query = 'SELECT cdQuestionario, dsEstrutura, nmDocumento FROM tbInventario WHERE dsEstrutura in (?) group by cdQuestionario, dsEstrutura, nmDocumento'
     pool.query(query, [req.body.strings], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
+router.get('/relatorio/:id', (req, res) => {
+   
+    const query = 'SELECT * FROM tbInventario WHERE cdQuestionario = ?'
+    pool.query(query, [req.params.id], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)
