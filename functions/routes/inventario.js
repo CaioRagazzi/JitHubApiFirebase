@@ -57,7 +57,7 @@ router.get('/inventario', (req, res) => {
 })
 
 router.post('/relatorio', (req, res) => {
-   
+
     const query = 'SELECT cdQuestionario, dsEstrutura, nmDocumento FROM tbInventario WHERE dsEstrutura in (?) group by cdQuestionario, dsEstrutura, nmDocumento'
     pool.query(query, [req.body.strings], (err, rows, fields) => {
         if (err) {
@@ -70,7 +70,7 @@ router.post('/relatorio', (req, res) => {
 })
 
 router.get('/relatorio/:id', (req, res) => {
-   
+
     const query = 'SELECT * FROM tbInventario WHERE cdQuestionario = ?'
     pool.query(query, [req.params.id], (err, rows, fields) => {
         if (err) {
@@ -80,6 +80,40 @@ router.get('/relatorio/:id', (req, res) => {
         }
         res.json(rows)
     })
+})
+
+router.post('/imgUpload', (req, res) => {
+
+    var protocolo = req.body.protocolo;
+    var path = req.body.path;
+
+    const query = "INSERT INTO tbInventarioImg (cdQuestionario, cdUrl) VALUES (?, ?)"
+    pool.query(query, [protocolo, path], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+
+        console.log('Inserted a new user with id: ', rows.insertId)
+    })
+
+    res.sendStatus(201)
+
+})
+
+router.get('/imagens/:id', (req, res) => {
+
+    const query = 'SELECT * FROM tbInventarioImg WHERE cdQuestionario = ?'
+    pool.query(query, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+    
 })
 
 module.exports = router
