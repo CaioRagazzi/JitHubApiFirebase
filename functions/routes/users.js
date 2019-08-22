@@ -1,57 +1,61 @@
-const express = require('express')
-const router = express.Router()
-const mysql = require('mysql')
+const router = require('express').Router()
 const cors = require('cors')
+const queries = require('../data/user')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 router.all('*', cors())
 
-const pool = mysql.createPool({
-    connectionLimit: 400,
-    host: '35.247.198.179',
-    port: '3306',
-    user: 'leandrotk',
-    password: 'github',
-    database: 'dbFirestore'
-})
+router.post('/login', (req, res) => {
 
-router.get('/users/:id', (req, res) => {
+    var user = {
+        cpf: req.body.cpf,
+        password: req.body.password,
+    }
 
-    pool.query(`SELECT * FROM tbUser where cpf = ${req.params.id}`, (err, rows, fields) => {
+    req.connection.query(queries.getUserByCpf, [user.cpf], (err, data) => {
         if (err) {
-            res.status(500).json({message: err.message})
-            return
-        }
-        res.json(rows)
-    })
+            return res.status(500).json({ message: err.message })
+        } else {
+            if (data.length <= 0) {
+                res.status(200).json({ message: "Usuário e/ou senha Inválidos" })
+            }
 
+            const validPass = bcrypt.compareSync(user.password, data[0].password)
+
+            if (!validPass) {
+                res.status(200).json({ message: "Usuário e/ou senha Inválidos" })
+            } else {
+                const token = jwt.sign({ user: user }, "qazwsxedcrfvtgbyhnujmik")
+
+                res.status(200).json({
+                    user: data[0],
+                    token: token
+                })
+            }
+        }
+    })
 })
 
-router.get('/users', (req, res) => {
+router.post('/create', (req, res) => {
 
-    pool.query('SELECT * FROM tbUser', (err, rows, fields) => {
-        if (err) {
-            res.status(500).json({message: err.message})
-            return
-        }
-        res.json(rows)
-    })
-})
+    // Hash passwords
+    const salt = bcrypt.genSaltSync(10)
+    const hashedPassword = bcrypt.hashSync(req.body.password, salt)
 
-router.post('/users', (req, res) => {
-
-
-    var cpf = req.body.cpf;
-    var senha = req.body.senha;
-    var email = req.body.email;
+    var user = {
+        cpf: req.body.cpf,
+        password: hashedPassword,
+        email: req.body.email
+    }
 
     const query = "INSERT INTO tbUser (cpf, password, email) VALUES (?, ?, ?)"
-    pool.query(query, [cpf, senha, email], (err, rows, fields) => {
+    req.connection.query(query, [user.cpf, user.password, user.email], (err, rows, fields) => {
         if (err) {
-            res.status(500).json({message: err.message})
-            return
+            return res.status(500).json({ message: err.message })
         }
-        res.status(201).json({ message: 'Inserted a new user with cpf: ' + cpf});
-    })    
+        res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
+    })
 })
 
 module.exports = router
