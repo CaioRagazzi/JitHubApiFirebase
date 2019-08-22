@@ -3,6 +3,7 @@ const cors = require('cors')
 const queries = require('../data/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const verifyToken = require('../jwt/jsontoken')
 
 router.all('*', cors())
 
@@ -37,7 +38,13 @@ router.post('/login', (req, res) => {
     })
 })
 
-router.post('/create', (req, res) => {
+router.post('/create', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
 
     // Hash passwords
     const salt = bcrypt.genSaltSync(10)
