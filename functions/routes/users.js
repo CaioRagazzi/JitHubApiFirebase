@@ -21,8 +21,8 @@ router.post('/login', (req, res) => {
             if (data.length <= 0) {
                 res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
             }
-
-            const validPass = bcrypt.compareSync(user.password, data[0].password)
+            
+            const validPass = bcrypt.compareSync(user.password, data[0].senha)
 
             if (!validPass) {
                 res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
@@ -53,12 +53,18 @@ router.post('/create', verifyToken, (req, res) => {
     var user = {
         cpf: req.body.cpf,
         password: hashedPassword,
-        email: req.body.email
+        email: req.body.email,
+        nome: req.body.nome,
+        sobrenome: req.body.sobrenome,
+        perfil: req.body.perfil,
+        ativo: req.body.ativo
     }
 
-    const query = "INSERT INTO tbUser (cpf, password, email) VALUES (?, ?, ?)"
-    req.connection.query(query, [user.cpf, user.password, user.email], (err, rows, fields) => {
+    req.connection.query(queries.insertNewUser, [user.cpf, user.password, user.email, user.nome, user.sobrenome, user.perfil, user.ativo], (err, rows, fields) => {
         if (err) {
+            if (err.message == "ER_DUP_ENTRY: Duplicate entry '36190841813' for key 'cpf'") {
+                return res.status(200).json({ message: 'User already exists' })
+            }
             return res.status(500).json({ message: err.message })
         }
         res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
@@ -73,8 +79,7 @@ router.get('/all', verifyToken, (req, res) => {
         }
     })
 
-    const query = "SELECT * FROM tbUser"
-    req.connection.query(query, (err, rows, fields) => {
+    req.connection.query(queries.getAllUser, (err, rows, fields) => {
         if (err) {
             return res.status(500).json({ message: err.message })
         }
@@ -90,14 +95,31 @@ router.get('/:id', verifyToken, (req, res) => {
         }
     })
 
-    const query = 'SELECT * FROM tbUser WHERE cpf = ?'
-    req.connection.query(query, [req.params.id], (err, rows, fields) => {
+    req.connection.query(queries.getUserByCpf, [req.params.id], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)
             return;
         }
         res.json(rows)
+    })
+})
+
+router.delete('/:id', verifyToken, (req, res) => {
+    
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    req.connection.query(queries.deleteUserByCpf, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.status(204).json({ message: 'Deleted a user with cpf: ' + req.params.id });
     })
 })
 
