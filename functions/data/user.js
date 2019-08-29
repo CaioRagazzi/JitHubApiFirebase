@@ -1,5 +1,5 @@
 const queriesUser = {
-    getUserByCpfAndPassword: "SELECT * FROM tbUser WHERE cpf = ? AND password = ?"
+    getUserByCpf: "SELECT * FROM tbUser WHERE cpf = ?"
 }
 
 module.exports = queriesUser
