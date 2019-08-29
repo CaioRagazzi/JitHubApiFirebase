@@ -19,13 +19,13 @@ router.post('/login', (req, res) => {
             return res.status(500).json({ message: err.message })
         } else {
             if (data.length <= 0) {
-                res.status(200).json({ message: "Usuário e/ou senha Inválidos" })
+                res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
             }
 
             const validPass = bcrypt.compareSync(user.password, data[0].password)
 
             if (!validPass) {
-                res.status(200).json({ message: "Usuário e/ou senha Inválidos" })
+                res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
             } else {
                 const token = jwt.sign({ user: user }, "qazwsxedcrfvtgbyhnujmik")
 
@@ -62,6 +62,42 @@ router.post('/create', verifyToken, (req, res) => {
             return res.status(500).json({ message: err.message })
         }
         res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
+    })
+})
+
+router.get('/all', verifyToken, (req, res) => {
+    
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    const query = "SELECT * FROM tbUser"
+    req.connection.query(query, (err, rows, fields) => {
+        if (err) {
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(200).json(rows);
+    })
+})
+
+router.get('/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    const query = 'SELECT * FROM tbUser WHERE cpf = ?'
+    req.connection.query(query, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
     })
 })
 
