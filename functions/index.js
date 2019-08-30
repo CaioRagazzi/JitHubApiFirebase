@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const express = require('express')
 const cors = require('cors');
-const user = require('./routes/users.js')
+const user = require('./routes/user/users.js')
 const connectionMysql = require("./data/connectionMysql")
 const poolMiddleware = require("./data/poolMiddleware")
 

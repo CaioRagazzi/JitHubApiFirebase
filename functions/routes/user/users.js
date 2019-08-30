@@ -1,9 +1,9 @@
 const router = require('express').Router()
 const cors = require('cors')
-const queries = require('../data/user')
+const queries = require('../../data/queries/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const verifyToken = require('../jwt/jsontoken')
+const verifyToken = require('../../jwt/jsontoken')
 
 router.all('*', cors())
 
