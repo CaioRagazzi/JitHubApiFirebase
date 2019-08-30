@@ -27,7 +27,7 @@ router.post('/login', (req, res) => {
             if (!validPass) {
                 res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
             } else {
-                const token = jwt.sign({ user: user }, "qazwsxedcrfvtgbyhnujmik")
+                const token = jwt.sign({ user: data[0] }, "qazwsxedcrfvtgbyhnujmik")
 
                 res.status(200).json({
                     user: data[0],
