@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const cors = require('cors')
-const queries = require('../../data/queries/organizacao')
+const queries = require('../../data/queries/disciplina')
 const jwt = require('jsonwebtoken')
 const verifyToken = require('../../jwt/jsontoken')
 
@@ -14,7 +14,7 @@ router.get('/all', verifyToken, (req, res) => {
         }
     })
 
-    req.connection.query(queries.getAllOrganizacoes, (err, rows, fields) => {
+    req.connection.query(queries.getAllDisciplinas, (err, rows, fields) => {
         if (err) {
             return res.status(500).json({ message: err.message })
         }
@@ -30,21 +30,19 @@ router.post('/create', verifyToken, (req, res) => {
         }
     })
 
-    var organizacao = {
-        nome: req.body.nome,
-        endereco: req.body.endereco,
-        responsavel: req.body.responsavel,
-        contato: req.body.contato
+    var disciplina = {
+        area_id: req.body.area_id,
+        nome: req.body.nome
     }
 
-    req.connection.query(queries.insertNewOrganizacao, [organizacao.nome, organizacao.endereco, organizacao.responsavel, organizacao.contato], (err, rows, fields) => {
+    req.connection.query(queries.insertNewDisciplina, [disciplina.area_id, disciplina.nome], (err, rows, fields) => {
         if (err) {
             if (err.message.includes("ER_DUP_ENTRY")) {
-                return res.status(200).json({ message: 'Organizacao already exists' })
+                return res.status(200).json({ message: 'Disciplina already exists' })
             }
             return res.status(500).json({ message: err.message })
         }
-        res.status(201).json({ message: 'Inserted a new organizacao with nome: ' + organizacao.nome });
+        res.status(201).json({ message: 'Inserted a new disciplina with nome: ' + disciplina.nome });
     })
 })
 

@@ -62,7 +62,7 @@ router.post('/create', verifyToken, (req, res) => {
 
     req.connection.query(queries.insertNewUser, [user.cpf, user.password, user.email, user.nome, user.sobrenome, user.perfil, user.ativo], (err, rows, fields) => {
         if (err) {
-            if (err.message == "ER_DUP_ENTRY: Duplicate entry '36190841813' for key 'cpf'") {
+            if (err.message.includes("ER_DUP_ENTRY")) {
                 return res.status(200).json({ message: 'User already exists' })
             }
             return res.status(500).json({ message: err.message })
