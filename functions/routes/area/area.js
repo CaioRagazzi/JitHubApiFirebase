@@ -45,4 +45,27 @@ router.post('/create', verifyToken, (req, res) => {
     })
 })
 
+router.put('/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    var area = {
+        nome: req.body.nome
+    }
+
+    req.connection.query(queries.updateArea, [area.nome, req.params.id], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_DUP_ENTRY")) {
+                return res.status(200).json({ message: 'Area already exists' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Updated a area with id: ' + req.params.id });
+    })
+})
+
 module.exports = router
