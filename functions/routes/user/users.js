@@ -57,7 +57,8 @@ router.post('/create', verifyToken, (req, res) => {
         nome: req.body.nome,
         sobrenome: req.body.sobrenome,
         perfil: req.body.perfil,
-        ativo: req.body.ativo
+        ativo: req.body.ativo,
+        organizacao: req.body.organizacao
     }
 
     req.connection.query(queries.insertNewUser, [user.cpf, user.password, user.email, user.nome, user.sobrenome, user.perfil, user.ativo], (err, rows, fields) => {
@@ -66,8 +67,14 @@ router.post('/create', verifyToken, (req, res) => {
                 return res.status(200).json({ message: 'User already exists' })
             }
             return res.status(500).json({ message: err.message })
+        } else {
+            req.connection.query(queries.insertUserOrganizacao, [rows.insertId, user.organizacao], (err, rows, fields) => {
+                if (err) {
+                    return res.status(500).json({ message: err.message })
+                }
+                res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
+            })
         }
-        res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
     })
 })
 
