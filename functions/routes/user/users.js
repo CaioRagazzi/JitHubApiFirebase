@@ -144,7 +144,6 @@ router.put('/:id', verifyToken, (req, res) => {
 
     var user = {
         cpf: req.params.id,
-        password: hashedPassword,
         email: req.body.email,
         nome: req.body.nome,
         sobrenome: req.body.sobrenome,
@@ -152,7 +151,7 @@ router.put('/:id', verifyToken, (req, res) => {
         organizacao: req.body.organizacao
     }
 
-    req.connection.query(queries.updateUser, [user.password, user.email, user.nome, user.sobrenome, user.perfil, user.cpf], (err, rows, fields) => {
+    req.connection.query(queries.updateUser, [user.email, user.nome, user.sobrenome, user.perfil, user.cpf], (err, rows, fields) => {
         if (err) {
             if (err.message.includes("ER_DUP_ENTRY")) {
                 return res.status(200).json({ message: 'Usuario already exists' })

@@ -123,4 +123,27 @@ router.post('/deleteUserOrg', verifyToken, (req, res) => {
     })
 })
 
+router.delete('/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    var organizacao = {
+        org: req.params.id
+    }
+
+    req.connection.query(queries.deleteOrganizacao, [organizacao.org], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_ROW_IS_REFERENCED_2")) {
+                return res.status(200).json({ message: 'Organizacao it is in use' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Deleted a organizacao with id: ' + organizacao.org });
+    })
+})
+
 module.exports = router

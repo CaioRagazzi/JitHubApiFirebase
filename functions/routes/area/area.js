@@ -68,4 +68,27 @@ router.put('/:id', verifyToken, (req, res) => {
     })
 })
 
+router.delete('/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    var area = {
+        area_id: req.params.id
+    }
+
+    req.connection.query(queries.deleteArea, [area.area_id], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_ROW_IS_REFERENCED_2")) {
+                return res.status(200).json({ message: 'Area it is in use' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Deleted area with id: ' + req.params.id });
+    })
+})
+
 module.exports = router
