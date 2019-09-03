@@ -21,7 +21,7 @@ router.post('/login', (req, res) => {
             if (data.length <= 0) {
                 res.status(403).json({ message: "Usuário e/ou senha Inválidos" })
             }
-            
+
             const validPass = bcrypt.compareSync(user.password, data[0].senha)
 
             if (!validPass) {
@@ -41,7 +41,7 @@ router.post('/login', (req, res) => {
 router.post('/create', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
-        if (err){
+        if (err) {
             return res.status(403).json({ message: "Acesso não autorizado" })
         }
     })
@@ -79,9 +79,9 @@ router.post('/create', verifyToken, (req, res) => {
 })
 
 router.get('/all', verifyToken, (req, res) => {
-    
+
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
-        if (err){
+        if (err) {
             return res.status(403).json({ message: "Acesso não autorizado" })
         }
     })
@@ -97,7 +97,7 @@ router.get('/all', verifyToken, (req, res) => {
 router.get('/:id', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
-        if (err){
+        if (err) {
             return res.status(403).json({ message: "Acesso não autorizado" })
         }
     })
@@ -113,9 +113,9 @@ router.get('/:id', verifyToken, (req, res) => {
 })
 
 router.delete('/:id', verifyToken, (req, res) => {
-    
+
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
-        if (err){
+        if (err) {
             return res.status(403).json({ message: "Acesso não autorizado" })
         }
     })
@@ -127,6 +127,39 @@ router.delete('/:id', verifyToken, (req, res) => {
             return;
         }
         res.status(204).json({ message: 'Deleted a user with cpf: ' + req.params.id });
+    })
+})
+
+router.put('/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    // Hash passwords
+    const salt = bcrypt.genSaltSync(10)
+    const hashedPassword = bcrypt.hashSync(req.body.password, salt)
+
+    var user = {
+        cpf: req.params.id,
+        password: hashedPassword,
+        email: req.body.email,
+        nome: req.body.nome,
+        sobrenome: req.body.sobrenome,
+        perfil: req.body.perfil,
+        organizacao: req.body.organizacao
+    }
+
+    req.connection.query(queries.updateUser, [user.password, user.email, user.nome, user.sobrenome, user.perfil, user.cpf], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_DUP_ENTRY")) {
+                return res.status(200).json({ message: 'Usuario already exists' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Updated a usuario with cpf: ' + req.params.id });
     })
 })
 

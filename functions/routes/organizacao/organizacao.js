@@ -74,4 +74,53 @@ router.put('/:id', verifyToken, (req, res) => {
     })
 })
 
+router.post('/updateUserOrg', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    var organizacaoUser = {
+        user: req.body.user_id,
+        oldOrg: req.body.oldOrg_id,
+        newOrg: req.body.newOrg_id
+    }
+
+    req.connection.query(queries.updateOrganizacaoUser, [organizacaoUser.newOrg, organizacaoUser.user, organizacaoUser.oldOrg], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_DUP_ENTRY")) {
+                return res.status(200).json({ message: 'Organizacao already exists' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Updated a organizacao/usuario with id: ' + organizacaoUser.user });
+    })
+})
+
+router.post('/deleteUserOrg', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err){
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    var organizacaoUser = {
+        user: req.body.user_id,
+        org: req.body.oldOrg_id
+    }
+
+    req.connection.query(queries.deleteOrganizacaoUser, [organizacaoUser.user, organizacaoUser.org], (err, rows, fields) => {
+        if (err) {
+            if (err.message.includes("ER_DUP_ENTRY")) {
+                return res.status(200).json({ message: 'Organizacao already exists' })
+            }
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(201).json({ message: 'Deleted a organizacao/usuario with id: ' + organizacaoUser.user });
+    })
+})
+
 module.exports = router
