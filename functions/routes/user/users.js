@@ -68,7 +68,12 @@ router.post('/create', verifyToken, (req, res) => {
             }
             return res.status(500).json({ message: err.message })
         } else {
-            req.connection.query(queries.insertUserOrganizacao, [rows.insertId, user.organizacao], (err, rows, fields) => {
+            var userOrg = []
+            user.organizacao.map(item => {
+                userOrg.push([rows.insertId, item])
+            })            
+            
+            req.connection.query(queries.insertUserOrganizacao, [userOrg], (err, rows, fields) => {
                 if (err) {
                     return res.status(500).json({ message: err.message })
                 }
@@ -112,6 +117,24 @@ router.get('/:id', verifyToken, (req, res) => {
     })
 })
 
+router.get('/estabelecimento/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    req.connection.query(queries.getUserByEstabelecimento, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
 router.delete('/:id', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
@@ -140,15 +163,13 @@ router.put('/:id', verifyToken, (req, res) => {
 
     // Hash passwords
     const salt = bcrypt.genSaltSync(10)
-    const hashedPassword = bcrypt.hashSync(req.body.password, salt)
 
     var user = {
         cpf: req.params.id,
         email: req.body.email,
         nome: req.body.nome,
         sobrenome: req.body.sobrenome,
-        perfil: req.body.perfil,
-        organizacao: req.body.organizacao
+        perfil: req.body.perfil_id
     }
 
     req.connection.query(queries.updateUser, [user.email, user.nome, user.sobrenome, user.perfil, user.cpf], (err, rows, fields) => {
