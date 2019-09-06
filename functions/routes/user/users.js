@@ -190,4 +190,68 @@ router.put('/:id', verifyToken, (req, res) => {
     })
 })
 
+router.post('/inserUserOrganizacao', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    model = {
+        userId: req.body.user_id,
+        orgId: req.body.org_id
+    }
+
+    req.connection.query(queries.insertUserOrganizacao, [model.userId, model.orgId], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
+router.post('/deleteUserOrganizacao', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    model = {
+        userId: req.body.user_id,
+        orgId: req.body.org_id
+    }
+
+    req.connection.query(queries.deletetUserOrganizacao, [model.userId, model.orgId], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
+router.get('/estabelecimento/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    req.connection.query(queries.getUserByEstabelecimento, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
 module.exports = router
