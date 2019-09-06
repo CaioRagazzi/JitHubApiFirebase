@@ -22,6 +22,22 @@ router.get('/all/:id', verifyToken, (req, res) => {
     })
 })
 
+router.get('/User/:id', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    req.connection.query(queries.getEstabelecimentosByUser, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            return res.status(500).json({ message: err.message })
+        }
+        res.status(200).json(rows);
+    })
+})
+
 router.post('/:id', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {

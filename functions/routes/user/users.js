@@ -39,7 +39,6 @@ router.post('/login', (req, res) => {
 })
 
 router.post('/create', verifyToken, (req, res) => {
-
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
         if (err) {
             return res.status(403).json({ message: "Acesso não autorizado" })
@@ -71,8 +70,8 @@ router.post('/create', verifyToken, (req, res) => {
             var userOrg = []
             user.organizacao.map(item => {
                 userOrg.push([rows.insertId, item])
-            })            
-            
+            })
+
             req.connection.query(queries.insertUserOrganizacao, [userOrg], (err, rows, fields) => {
                 if (err) {
                     return res.status(500).json({ message: err.message })
@@ -135,7 +134,7 @@ router.get('/estabelecimento/:id', verifyToken, (req, res) => {
     })
 })
 
-router.delete('/:id', verifyToken, (req, res) => {
+router.delete('/deleteUserOrg/:id', verifyToken, (req, res) => {    
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
         if (err) {
@@ -143,13 +142,21 @@ router.delete('/:id', verifyToken, (req, res) => {
         }
     })
 
-    req.connection.query(queries.deleteUserByCpf, [req.params.id], (err, rows, fields) => {
+    req.connection.query(queries.deleteUserOrganizacao, [req.params.id], (err, rows, fields) => {
         if (err) {
-            console.error('error connecting: ' + err.stack);
+            console.error(err);
             res.sendStatus(500)
-            return;
+            return
+        } else {
+            req.connection.query(queries.deleteUserByCpf, [req.params.id], (err, rows, fields) => {
+                if (err) {
+                    console.error(err);
+                    res.sendStatus(500)
+                    return
+                }
+                res.json(rows)
+            })
         }
-        res.status(204).json({ message: 'Deleted a user with cpf: ' + req.params.id });
     })
 })
 
@@ -172,7 +179,7 @@ router.put('/:id', verifyToken, (req, res) => {
         perfil: req.body.perfil_id
     }
 
-    req.connection.query(queries.updateUser, [user.email, user.nome, user.sobrenome, user.perfil, user.cpf], (err, rows, fields) => {
+    req.connection.query(queries.updateUser, [user.email, user.nome, user.sobrenome, user.cpf], (err, rows, fields) => {
         if (err) {
             if (err.message.includes("ER_DUP_ENTRY")) {
                 return res.status(200).json({ message: 'Usuario already exists' })

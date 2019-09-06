@@ -99,7 +99,7 @@ router.post('/updateUserOrg', verifyToken, (req, res) => {
     })
 })
 
-router.post('/deleteUserOrg', verifyToken, (req, res) => {
+router.post('/deleteUserOrg/:id', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
         if (err){
@@ -107,12 +107,7 @@ router.post('/deleteUserOrg', verifyToken, (req, res) => {
         }
     })
 
-    var organizacaoUser = {
-        user: req.body.user_id,
-        org: req.body.oldOrg_id
-    }
-
-    req.connection.query(queries.deleteOrganizacaoUser, [organizacaoUser.user, organizacaoUser.org], (err, rows, fields) => {
+    req.connection.query(queries.deleteOrganizacaoUser, [req.params.id], (err, rows, fields) => {
         if (err) {
             if (err.message.includes("ER_DUP_ENTRY")) {
                 return res.status(200).json({ message: 'Organizacao already exists' })
