@@ -74,6 +74,8 @@ router.post('/create', verifyToken, (req, res) => {
 
             req.connection.query(queries.insertUserOrganizacao, [userOrg], (err, rows, fields) => {
                 if (err) {
+                    console.log(err);
+                    
                     return res.status(500).json({ message: err.message })
                 }
                 res.status(201).json({ message: 'Inserted a new user with cpf: ' + user.cpf });
@@ -142,13 +144,13 @@ router.delete('/deleteUserOrg/:id', verifyToken, (req, res) => {
         }
     })
 
-    req.connection.query(queries.deleteUserOrganizacao, [req.params.id], (err, rows, fields) => {
+    req.connection.query(queries.deleteUserOrganizacaoByUserId, [req.params.id], (err, rows, fields) => {
         if (err) {
             console.error(err);
             res.sendStatus(500)
             return
         } else {
-            req.connection.query(queries.deleteUserByCpf, [req.params.id], (err, rows, fields) => {
+            req.connection.query(queries.deleteUserById, [req.params.id], (err, rows, fields) => {
                 if (err) {
                     console.error(err);
                     res.sendStatus(500)
@@ -190,7 +192,7 @@ router.put('/:id', verifyToken, (req, res) => {
     })
 })
 
-router.post('/inserUserOrganizacao', verifyToken, (req, res) => {
+router.post('/insertUserOrganizacao', verifyToken, (req, res) => {
 
     jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
         if (err) {
@@ -203,7 +205,7 @@ router.post('/inserUserOrganizacao', verifyToken, (req, res) => {
         orgId: req.body.org_id
     }
 
-    req.connection.query(queries.insertUserOrganizacao, [model.userId, model.orgId], (err, rows, fields) => {
+    req.connection.query(queries.insertUserOrganizacaoCadastro, [model.userId, model.orgId], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)
@@ -226,7 +228,7 @@ router.post('/deleteUserOrganizacao', verifyToken, (req, res) => {
         orgId: req.body.org_id
     }
 
-    req.connection.query(queries.deletetUserOrganizacao, [model.userId, model.orgId], (err, rows, fields) => {
+    req.connection.query(queries.deleteUserOrganizacao, [model.userId, model.orgId], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)
@@ -245,6 +247,33 @@ router.get('/estabelecimento/:id', verifyToken, (req, res) => {
     })
 
     req.connection.query(queries.getUserByEstabelecimento, [req.params.id], (err, rows, fields) => {
+        if (err) {
+            console.error('error connecting: ' + err.stack);
+            res.sendStatus(500)
+            return;
+        }
+        res.json(rows)
+    })
+})
+
+router.post('/updateUserPasswordByUserId', verifyToken, (req, res) => {
+
+    jwt.verify(req.token, "qazwsxedcrfvtgbyhnujmik", (err, authData) => {
+        if (err) {
+            return res.status(403).json({ message: "Acesso não autorizado" })
+        }
+    })
+
+    // Hash passwords
+    const salt = bcrypt.genSaltSync(10)
+    const hashedPassword = bcrypt.hashSync(req.body.senha, salt)
+
+    model = {
+        userId: req.body.user_id,
+        password: hashedPassword
+    }
+
+    req.connection.query(queries.updateUserPasswordByUserId, [model.password, model.userId], (err, rows, fields) => {
         if (err) {
             console.error('error connecting: ' + err.stack);
             res.sendStatus(500)
